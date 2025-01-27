@@ -116,22 +116,13 @@ jobs:
           echo "TESTS=${TESTS}" >> $GITHUB_ENV
         if: ${{ matrix.test_task == 'check' && matrix.skipped_tests }}
 
-      - name: Set up Launchable
-        uses: ./.github/actions/launchable/setup
-        with:
-          os: macos-14
-          test-opts: ${{ matrix.configure }}
-          launchable-token: ${{ secrets.LAUNCHABLE_TOKEN }}
-          launchable-url: ${{ secrets.LAUNCHABLE_BASE_URL }}
-          builddir: build
-          srcdir: src
-        continue-on-error: true
-
       - name: make ${{ matrix.test_task }}
         run: >-
-          make -s ${{ matrix.test_task }} ${TESTS:+TESTS="$TESTS"}
-          RUN_OPTS="$RUN_OPTS"
-          SPECOPTS="$SPECOPTS"
+          for i in {1..100}; do
+            make -s ${{ matrix.test_task }} ${TESTS:+TESTS="$TESTS"}
+            RUN_OPTS="$RUN_OPTS"
+            SPECOPTS="$SPECOPTS"
+          done
         timeout-minutes: 60
         env:
           RUBY_TESTOPTS: "-q --tty=no"

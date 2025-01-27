@@ -120,17 +120,6 @@ jobs:
           echo "TESTS=${TESTS}" >> $GITHUB_ENV
         if: ${{ matrix.test_task == 'check' && matrix.skipped_tests }}
 
-      - name: Set up Launchable
-        uses: ./.github/actions/launchable/setup
-        with:
-          os: ${{ matrix.os }}
-          test-opts: ${{ matrix.test_opts }}
-          launchable-token: ${{ secrets.LAUNCHABLE_TOKEN }}
-          launchable-url: ${{ secrets.LAUNCHABLE_BASE_URL }}
-          builddir: build
-          srcdir: src
-        continue-on-error: true
-
       - name: Set extra test options
         run: |
           echo "TESTS=$TESTS ${{ matrix.test_opts }}" >> $GITHUB_ENV
@@ -140,8 +129,10 @@ jobs:
       - name: make ${{ matrix.test_task }}
         run: |
           ulimit -c unlimited
-          make -s ${{ matrix.test_task }} ${TESTS:+TESTS="$TESTS"}
-        timeout-minutes: 60
+          for i in {1..100}; do
+            make -s ${{ matrix.test_task }} ${TESTS:+TESTS="$TESTS"}
+          done
+        timeout-minutes: 1000
         env:
           RUBY_TESTOPTS: "-q --tty=no"
           TEST_BUNDLED_GEMS_ALLOW_FAILURES: "typeprof"
